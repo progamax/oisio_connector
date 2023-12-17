@@ -57,6 +57,8 @@ def connect_to_network(ssid, key):
     time.sleep(5)
     waitstatus = os.system(f"nmcli device wifi connect {ssid} password {key}")
     exit_code = os.waitstatus_to_exitcode(waitstatus)
+    if (exit_code != 0):
+        os.system(f"nmcli connection delete {ssid}")
     return (exit_code == 0)
 
 """
