@@ -9,6 +9,7 @@ port = 5555
 is_hotspot_launched = False
 
 def launch_hotspot(ifname):
+    global is_hotspot_launched
     assert platform.system().lower() == "linux", "Hotspot can be started only on linux"
     os.system(f"""nmcli connection add ifname {ifname}\
             type wifi autoconnect yes wifi.ssid APTest\
@@ -19,6 +20,7 @@ def launch_hotspot(ifname):
     is_hotspot_launched = True
     
 def stop_hotspot():
+    global is_hotspot_launched
     if is_hotspot_launched:
         os.system("nmcli connection delete Hotspot")
         is_hotspot_launched = False
