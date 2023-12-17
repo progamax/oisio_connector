@@ -3,6 +3,7 @@ import socket
 import json
 import os
 import platform
+import time
 
 port = 5555
 
@@ -45,7 +46,10 @@ def format_scan_results(results):
     return formatted_results
 
 def connect_to_network(ssid, key):
-    os.system(f"nmcli device wifi connect {ssid} password ${key}")
+    # On force le rescan des réseaux Wifi (la sortie du mode Hotspot juste avant peut être source d'erreur sinon)
+    os.system("nmcli device wifi rescan")
+    time.sleep(2)
+    os.system(f"nmcli device wifi connect {ssid} password {key}")
 
 
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
