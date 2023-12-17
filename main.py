@@ -102,6 +102,7 @@ def main():
                 conn.sendall(json.dumps({ssid_received: True}).encode("utf-8"))
 
                 # Connect to Wifi
+                conn.close()
                 stop_hotspot()
                 connected = connect_to_network(ssid_received, key_received)
                 if connected:
