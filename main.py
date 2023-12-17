@@ -62,6 +62,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         (conn, address) = s.accept()
         print("Received a connection")
         with conn:
+            print("Scanning...")
             ap_profiles = scan_wifi(iface)
             formatted_results = format_scan_results(ap_profiles)
 
@@ -81,5 +82,5 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             conn.sendall(json.dumps({ssid_received: True}).encode("utf-8"))
 
             # Connect to Wifi
-            # profile = next([profile for profile in ap_profiles if profile.ssid == ssid_received])
-            # connect_to_network(iface, profile, key_received)
+            profile = next([profile for profile in ap_profiles if profile.ssid == ssid_received])
+            connect_to_network(iface, profile, key_received)
