@@ -26,7 +26,7 @@ def stop_hotspot():
 
 def get_wifi_interface():
     wifi = pywifi.PyWiFi()
-    interfaces = [i for i in wifi.interfaces() if i.status() != pywifi.const.IFACE_DISCONNECTED]
+    interfaces = [i for i in wifi.interfaces() if not "p2p-dev" in i.name()]
     return interfaces[0]
 
 def scan_wifi(iface):
