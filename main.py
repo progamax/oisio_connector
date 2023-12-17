@@ -6,6 +6,7 @@ import platform
 import time
 
 port = 5555
+is_hotspot_launched = False
 
 def launch_hotspot(ifname):
     assert platform.system().lower() == "linux", "Hotspot can be started only on linux"
@@ -15,9 +16,12 @@ def launch_hotspot(ifname):
             wifi.mode ap\
             ipv4.method shared ipv6.method disabled\
             con-name Hotspot""")
+    is_hotspot_launched = True
     
 def stop_hotspot():
-    os.system("nmcli connection delete Hotspot")
+    if is_hotspot_launched:
+        os.system("nmcli connection delete Hotspot")
+        is_hotspot_launched = False
 
 def get_wifi_interface():
     wifi = pywifi.PyWiFi()
@@ -51,39 +55,45 @@ def connect_to_network(ssid, key):
     time.sleep(2)
     os.system(f"nmcli device wifi connect {ssid} password {key}")
 
+def main():
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        iface = get_wifi_interface()
+        print("Scanning...")
+        ap_profiles = scan_wifi(iface)
+        formatted_results = format_scan_results(ap_profiles)
 
-with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-    iface = get_wifi_interface()
-    print("Scanning...")
-    ap_profiles = scan_wifi(iface)
-    formatted_results = format_scan_results(ap_profiles)
-    
-    launch_hotspot(iface.name())
+        launch_hotspot(iface.name())
 
-    s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    s.bind(('', port))
-    s.listen(1)
-    print(f"Listening on port {port} ...")
-    while True:
-        (conn, address) = s.accept()
-        print("Received a connection")
-        with conn:
-            conn.sendall(json.dumps(formatted_results).encode("utf-8"))
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        s.bind(('', port))
+        s.listen(1)
+        print(f"Listening on port {port} ...")
+        while True:
+            (conn, address) = s.accept()
+            print("Received a connection")
+            with conn:
+                conn.sendall(json.dumps(formatted_results).encode("utf-8"))
 
-            buff = conn.recv(512)
+                buff = conn.recv(512)
 
-            content = buff.decode("utf-8")
-            
-            try:
-                res = json.loads(content)  # dict {<SSID>: <key>}
-            except:
-                continue
-            ssid_received = list(res.keys())[0]
-            key_received = res[ssid_received]
+                content = buff.decode("utf-8")
+                
+                try:
+                    res = json.loads(content)  # dict {<SSID>: <key>}
+                except:
+                    continue
+                ssid_received = list(res.keys())[0]
+                key_received = res[ssid_received]
 
-            print(res)
-            conn.sendall(json.dumps({ssid_received: True}).encode("utf-8"))
+                print(res)
+                conn.sendall(json.dumps({ssid_received: True}).encode("utf-8"))
 
-            # Connect to Wifi
-            stop_hotspot()
-            connect_to_network(ssid_received, key_received)
+                # Connect to Wifi
+                stop_hotspot()
+                connect_to_network(ssid_received, key_received)
+
+
+try:
+    main()
+except KeyboardInterrupt:
+    stop_hotspot()
