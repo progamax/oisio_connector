@@ -55,7 +55,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     launch_hotspot(iface.name())
 
     s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    s.bind((socket.gethostname(), port))
+    s.bind(('', port))
     s.listen(1)
     print(f"Listening on port {port} ...")
     while True:
