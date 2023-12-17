@@ -55,8 +55,9 @@ def connect_to_network(ssid, key):
     # On force le rescan des réseaux Wifi (la sortie du mode Hotspot juste avant peut être source d'erreur sinon)
     os.system("nmcli device wifi rescan")
     time.sleep(5)
-    exit_code = os.waitstatus_to_exitcode(os.system(f"nmcli device wifi connect {ssid} password {key}"))
-    return exit_code == 0
+    waitstatus = os.system(f"nmcli device wifi connect {ssid} password {key}")
+    exit_code = os.waitstatus_to_exitcode(waitstatus)
+    return (exit_code == 0)
 
 """
 Cette fonction sert à l'initialisation du protocole d'ajout de mangeoire.
