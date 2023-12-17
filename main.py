@@ -82,5 +82,5 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             conn.sendall(json.dumps({ssid_received: True}).encode("utf-8"))
 
             # Connect to Wifi
-            profile = next([profile for profile in ap_profiles if profile.ssid == ssid_received])
+            profile = [profile for profile in ap_profiles if profile.ssid == ssid_received][0]
             connect_to_network(iface, profile, key_received)
