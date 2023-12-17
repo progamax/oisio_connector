@@ -64,18 +64,15 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         (conn, address) = s.accept()
         print("Received a connection")
         with conn:
+            print("Scanning...")
+            ap_profiles = scan_wifi(iface)
+            formatted_results = format_scan_results(ap_profiles)
+            conn.sendall(json.dumps(formatted_results).encode("utf-8"))
             while True:
-                print("Scanning...")
-                ap_profiles = scan_wifi(iface)
-                formatted_results = format_scan_results(ap_profiles)
-
-                conn.sendall(json.dumps(formatted_results).encode("utf-8"))
                 buff = conn.recv(512)
 
                 content = buff.decode("utf-8")
-                if content == "SCAN":
-                    continue
-
+                
                 try:
                     res = json.loads(content)  # dict {<SSID>: <key>}
                 except:
