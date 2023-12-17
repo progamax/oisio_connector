@@ -54,17 +54,27 @@ def format_scan_results(results):
 def connect_to_network(ssid, key):
     # On force le rescan des réseaux Wifi (la sortie du mode Hotspot juste avant peut être source d'erreur sinon)
     os.system("nmcli device wifi rescan")
-    time.sleep(2)
-    os.system(f"nmcli device wifi connect {ssid} password {key}")
+    time.sleep(5)
+    exit_code = os.waitstatus_to_exitcode(os.system(f"nmcli device wifi connect {ssid} password {key}"))
+    return exit_code == 0
+
+"""
+Cette fonction sert à l'initialisation du protocole d'ajout de mangeoire.
+Elle récupère la liste des points accès environnants et lance le Hotspot (impossible de scanner les AP en mode Hotspot)
+Elle retourne cette liste
+"""
+def initialization():
+    iface = get_wifi_interface()
+    print("Scanning...")
+    ap_profiles = scan_wifi(iface)
+    formatted_results = format_scan_results(ap_profiles)
+    launch_hotspot(iface.name())
+
+    return formatted_results
 
 def main():
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        iface = get_wifi_interface()
-        print("Scanning...")
-        ap_profiles = scan_wifi(iface)
-        formatted_results = format_scan_results(ap_profiles)
-
-        launch_hotspot(iface.name())
+        formatted_results = initialization()
 
         s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         s.bind(('', port))
@@ -92,7 +102,15 @@ def main():
 
                 # Connect to Wifi
                 stop_hotspot()
-                connect_to_network(ssid_received, key_received)
+                connected = connect_to_network(ssid_received, key_received)
+                if connected:
+                    print("Connexion réussie")
+                    exit()
+                else:
+                    print("Echec de la connexion")
+                    formatted_results = initialization()
+                    continue
+
 
 
 try:
