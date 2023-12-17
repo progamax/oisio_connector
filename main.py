@@ -44,10 +44,8 @@ def format_scan_results(results):
     print(formatted_results)
     return formatted_results
 
-def connect_to_network(interface, profile, key):
-    profile.key = key
-    interface.add_network_profile(profile)
-    interface.connect(profile)
+def connect_to_network(ssid, key):
+    os.system(f"nmcli device wifi connect {ssid} password ${key}")
 
 
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
@@ -82,6 +80,5 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             conn.sendall(json.dumps({ssid_received: True}).encode("utf-8"))
 
             # Connect to Wifi
-            profile = [profile for profile in ap_profiles if profile.ssid == ssid_received][0]
             stop_hotspot()
-            connect_to_network(iface, profile, key_received)
+            connect_to_network(ssid_received, key_received)
