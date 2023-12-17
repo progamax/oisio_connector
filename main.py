@@ -83,4 +83,5 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
 
             # Connect to Wifi
             profile = [profile for profile in ap_profiles if profile.ssid == ssid_received][0]
+            stop_hotspot()
             connect_to_network(iface, profile, key_received)
