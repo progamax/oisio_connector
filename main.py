@@ -8,17 +8,11 @@ port = 5555
 
 def launch_hotspot(ifname):
     assert platform.system().lower() == "linux", "Hotspot can be started only on linux"
-    os.system(f"""
-        nmcli connection add 
-            ifname {ifname}
-            type wifi
-            autoconnect yes
-            wifi.ssid APTest
-            ip4 192.168.0.1/24
-            gw4 192.168.0.1
-            wifi.mode ap
-            ipv4.method shared
-            ipv6.method disabled
+    os.system(f"""nmcli connection add ifname {ifname}\
+            type wifi autoconnect yes wifi.ssid APTest\
+            ip4 192.168.0.1/24 gw4 192.168.0.1\
+            wifi.mode ap\
+            ipv4.method shared ipv6.method disabled\
             con-name Hotspot""")
     
 def stop_hotspot():
