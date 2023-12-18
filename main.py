@@ -57,9 +57,12 @@ def connect_to_network(ssid, key):
     time.sleep(5)
     waitstatus = os.system(f"""nmcli device wifi connect "{ssid}" password "{key}" """)
     exit_code = os.waitstatus_to_exitcode(waitstatus)
-    if (exit_code != 0):
+
+    connected = (get_wifi_interface().status() in [pywifi.const.IFACE_CONNECTED, pywifi.const.IFACE_CONNECTING])
+
+    if (exit_code != 0 or not connected):
         os.system(f"""nmcli connection delete "{ssid}" """)
-    return (exit_code == 0)
+    return (exit_code == 0 and connected)
 
 """
 Cette fonction sert à l'initialisation du protocole d'ajout de mangeoire.
